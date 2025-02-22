@@ -1,1 +1,2 @@
-apikey = "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"
+openai.api_key = "AIzaSyCzwwqQ76afoWtT5kZKj_gZ8gWZWUxjXRc"
+elevenlabs_api_key = "sk_c3cf3c18abbdf27d87947f76722b224280dce22179b6e83b"

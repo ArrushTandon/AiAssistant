@@ -33,8 +33,25 @@ except Exception as e:
     # Log any errors
     print(f"An error occurred: {e}")"""
 
+from elevenlabs.client import ElevenLabs
 
+client = ElevenLabs(
+    api_key="sk_c3cf3c18abbdf27d87947f76722b224280dce22179b6e83b"
+)
 
+# Generate audio as a stream
+audio_stream = client.generate(
+    text="Hello, this is ElevenLabs speaking!",
+    voice="Brian",
+    model="eleven_multilingual_v2",
+    stream=True  # Enables streaming
+)
 
-import elevenlabs
-print(dir(elevenlabs))
+# Save the audio file correctly
+with open("output.mp3", "wb") as f:
+    for chunk in audio_stream:  # Iterate over generator
+        f.write(chunk)
+
+# Play the saved file
+import os
+os.system("start output.mp3")  # Opens in default media player (Windows)
