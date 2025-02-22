@@ -4,8 +4,6 @@ import pyttsx3
 import webbrowser
 from time import time
 import openai
-import elevenlabs
-
 query = ""
 context = "You are Jarvis, Arrush's human assistant. You are joyful and full of personality. Your answers should be limited to 1-2 short sentences."
 

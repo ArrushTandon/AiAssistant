@@ -8,8 +8,8 @@ query=""
 context = "You are Jarvis, Arrush's human assistant. You are joyful and full of personality. Your answers should be limited to 1-2 short sentences."
 
 engine = pyttsx3.init()
-openai.api_key = "sk-ijklmnopqrstuvwxijklmnopqrstuvwxijklmnop"
-elevenlabs_api_key= "sk_4845f1da8c9f62c9945f38d318bb7ac5ff9fc2f59e768fe1"
+openai.api_key = "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"
+elevenlabs_api_key= "sk_c3cf3c18abbdf27d87947f76722b224280dce22179b6e83b"
 
 
 def say(text: str) -> None:
@@ -95,7 +95,7 @@ def request_gpt(prompt: query)-> query:
 
 if __name__ == "__main__":
     print("Welcome to Jarvis AI!")
-    say("Welcome to Jarvis AI! ,Arrush")
+    say("Welcome to Jarvis AI!")
     while True:
         try:
             query=take_command()
