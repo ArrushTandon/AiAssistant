@@ -1,86 +1,186 @@
 import speech_recognition as sr
-import os
 import pyttsx3
 import google.generativeai as genai
+import requests  # For making HTTP requests to external APIs
+from datetime import datetime  # For timestamping news articles
 
-# 1️⃣ SETUP GOOGLE GEMINI API KEY
-GEMINI_API_KEY = "AIzaSyCrlz1nb67V6sVGi5Z-wTsSBiTyYm7viDo"
-genai.configure(api_key=GEMINI_API_KEY)
+class Chatbot:
+    def __init__(self, api_key: str, user_name: str = "Arrush", weather_api_key: str = None, news_api_key: str = None, stock_api_key: str = None):
+        self.api_key = api_key  # Google Gemini API key
+        self.user_name = user_name
+        self.weather_api_key = weather_api_key  # OpenWeatherMap API key
+        self.news_api_key = news_api_key  # NewsAPI key
+        self.stock_api_key = stock_api_key  # Alpha Vantage API key
+        self.engine = pyttsx3.init()
+        self.setup_gemini()
 
-# 2️⃣ SETUP TEXT-TO-SPEECH ENGINE
-engine = pyttsx3.init()
+    def setup_gemini(self):
+        """Configures the Google Gemini API."""
+        genai.configure(api_key=self.api_key)
 
-def say(text: str):
-    """Speaks the given text using pyttsx3."""
-    print(f"Jarvis: {text}")  # Debugging
-    engine.say(text)
-    engine.runAndWait()
+    def say(self, text: str):
+        """Speaks the given text using pyttsx3."""
+        print(f"Jarvis: {text}")  # Debugging
+        self.engine.say(text)
+        self.engine.runAndWait()
 
-def take_command() -> str:
-    """Captures voice input from the user."""
-    recognizer = sr.Recognizer()
-    with sr.Microphone() as source:
-        print("Listening...")
+    def take_command(self) -> str:
+        """Captures voice input from the user."""
+        recognizer = sr.Recognizer()
+        with sr.Microphone() as source:
+            print("Listening...")
+            try:
+                recognizer.adjust_for_ambient_noise(source, duration=1)
+                audio = recognizer.listen(source)
+                print("Recognizing...")
+                query = recognizer.recognize_google(audio, language="en-in")
+                return query
+            except sr.UnknownValueError:
+                print("Sorry, I couldn't understand.")
+                return ""
+            except sr.RequestError:
+                print("Speech service unavailable.")
+                return ""
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                return ""
+
+    def generate_response(self, prompt: str) -> str:
+        """Generates a response using Google Gemini API or fetches real-time data."""
         try:
-            recognizer.adjust_for_ambient_noise(source, duration=1)
-            audio = recognizer.listen(source)
-            print("Recognizing...")
-            query = recognizer.recognize_google(audio, language="en-in")
-            return query
-        except sr.UnknownValueError:
-            print("Sorry, I couldn't understand.")
-            return ""
-        except sr.RequestError:
-            print("Speech service unavailable.")
-            return ""
+            # Check for specific real-time data requests
+            if "temperature" in prompt.lower():
+                return self.get_current_temperature()
+            elif "news" in prompt.lower():
+                return self.get_latest_news()
+            elif "stock price" in prompt.lower():
+                return self.get_stock_price()
+            else:
+                # Use Gemini for general queries
+                model = genai.GenerativeModel("gemini-pro")
+                system_prompt = (
+                    f"You are J.A.R.V.I.S, an advanced AI assistant modeled after the AI from Iron Man. "
+                    f"You must address the user as '{self.user_name}', maintaining a formal and efficient tone. "
+                    "You provide smart, witty, and informative responses while maintaining professionalism."
+                )
+                full_prompt = f"{system_prompt}\nUser: {prompt}\nJarvis:"
+                response = model.generate_content(full_prompt)
+                return response.text.strip()
         except Exception as e:
-            print(f"An error occurred: {e}")
-            return ""
+            print(f"Error generating response: {e}")
+            return f"I'm sorry, {self.user_name}. I encountered an issue."
 
+    def get_current_temperature(self) -> str:
+        """Fetches the current temperature using OpenWeatherMap API."""
+        if not self.weather_api_key:
+            return "Weather API key is not configured."
 
-USER_NAME = "Arrush"
+        # Ask the user for their location
+        self.say("Please tell me your city name.")
+        city = self.take_command()
+        if not city:
+            return "I couldn't understand the city name."
 
-
-def generate_response(prompt: str) -> str:
-    """Generates a response using Google Gemini API with Jarvis personality."""
-    try:
-        model = genai.GenerativeModel("gemini-pro")
-        system_prompt = (
-            f"You are J.A.R.V.I.S, an advanced AI assistant modeled after the AI from Iron Man. "
-            f"You must address the user as 'ARRUSH', maintaining a formal and efficient tone. "
-            "You provide smart, witty, and informative responses while maintaining professionalism."
-        )
-        full_prompt = f"{system_prompt}\nUser: {prompt}\nJarvis:"
-
-        response = model.generate_content(full_prompt)
-        return response.text.strip()
-    except Exception as e:
-        print(f"Error generating response: {e}")
-        return f"I'm sorry, ARRUSH. I encountered an issue."
-
-
-# MAIN LOOP
-if __name__ == "__main__":
-    print("Welcome to Jarvis AI!")
-    say("Welcome to Jarvis AI!")
-
-    while True:
+        # Fetch weather data from OpenWeatherMap
         try:
-            query = take_command()
-            if not query:
-                continue
+            url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={self.weather_api_key}&units=metric"
+            response = requests.get(url)
+            data = response.json()
 
-            if "exit" in query.lower():
-                say("Goodbye!")
+            if response.status_code == 200:
+                temperature = data["main"]["temp"]
+                return f"The current temperature in {city} is {temperature}°C."
+            else:
+                return f"Sorry, I couldn't fetch the temperature for {city}."
+        except Exception as e:
+            print(f"Error fetching temperature: {e}")
+            return "I encountered an issue while fetching the temperature."
+
+    def get_latest_news(self) -> str:
+        """Fetches the latest news using NewsAPI."""
+        if not self.news_api_key:
+            return "News API key is not configured."
+
+        try:
+            url = f"https://newsapi.org/v2/top-headlines?country=us&apiKey={self.news_api_key}"
+            response = requests.get(url)
+            data = response.json()
+
+            if response.status_code == 200:
+                articles = data["articles"][:5]  # Get top 5 articles
+                news_summary = "Here are the latest news headlines:\n"
+                for idx, article in enumerate(articles, start=1):
+                    title = article["title"]
+                    news_summary += f"{idx}. {title}\n"
+                return news_summary
+            else:
+                return "Sorry, I couldn't fetch the latest news."
+        except Exception as e:
+            print(f"Error fetching news: {e}")
+            return "I encountered an issue while fetching the news."
+
+    def get_stock_price(self) -> str:
+        """Fetches the current stock price using Alpha Vantage API."""
+        if not self.stock_api_key:
+            return "Stock API key is not configured."
+
+        # Ask the user for the stock symbol
+        self.say("Please tell me the stock symbol.")
+        symbol = self.take_command()
+        if not symbol:
+            return "I couldn't understand the stock symbol."
+
+        try:
+            url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&apikey={self.stock_api_key}"
+            response = requests.get(url)
+            data = response.json()
+
+            if "Global Quote" in data:
+                price = data["Global Quote"]["05. price"]
+                return f"The current price of {symbol} is ${price}."
+            else:
+                return f"Sorry, I couldn't fetch the stock price for {symbol}."
+        except Exception as e:
+            print(f"Error fetching stock price: {e}")
+            return "I encountered an issue while fetching the stock price."
+
+    def run(self):
+        """Main loop to run the chatbot."""
+        print("Welcome to Jarvis AI!")
+        self.say("Welcome to Jarvis AI!")
+
+        while True:
+            try:
+                query = self.take_command()
+                if not query:
+                    continue
+
+                if "exit" in query.lower():
+                    self.say("Goodbye!")
+                    break
+
+                # Generate and speak the response
+                response = self.generate_response(query)
+                self.say(response)
+
+            except KeyboardInterrupt:
+                print("\nExiting...")
+                self.say("Goodbye!")
                 break
 
-            # **Use Gemini API instead of GPT**
-            response = generate_response(query)
 
-            # Speak the response
-            say(response)
+if __name__ == "__main__":
+    # Replace with your actual API keys
+    GEMINI_API_KEY = "AIzaSyCrlz1nb67V6sVGi5Z-wTsSBiTyYm7viDo"
+    WEATHER_API_KEY = "371042462224860bd20bc47078679ecb"
+    NEWS_API_KEY = "c29d283b2af34ab08fbbb422d8b53c31"
+    STOCK_API_KEY = "LYRST9WLUPLTTZBN"
 
-        except KeyboardInterrupt:
-            print("\nExiting...")
-            say("Goodbye!")
-            break
+    # Initialize and run the chatbot
+    jarvis = Chatbot(
+        api_key=GEMINI_API_KEY,
+        weather_api_key=WEATHER_API_KEY,
+        news_api_key=NEWS_API_KEY,
+        stock_api_key=STOCK_API_KEY
+    )
+    jarvis.run()
