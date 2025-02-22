@@ -1,2 +1,7 @@
 pip install SpeechRecognition pyttsx3 openai elevenlabs
 pip install pyaudio
+pip install diffusers opencv-python transformers accelerate
+pip uninstall torch torchvision -y
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+pip install ultralytics mediapipe
+pip install --upgrade diffusers transformers accelerate safetensors

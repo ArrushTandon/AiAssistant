@@ -1,2 +1,8 @@
-openai.api_key = "AIzaSyCzwwqQ76afoWtT5kZKj_gZ8gWZWUxjXRc"
+openai_api_key = "AIzaSyCzwwqQ76afoWtT5kZKj_gZ8gWZWUxjXRc"
 elevenlabs_api_key = "sk_c3cf3c18abbdf27d87947f76722b224280dce22179b6e83b"
+
+
+GEMINI_API_KEY = "AIzaSyCrlz1nb67V6sVGi5Z-wTsSBiTyYm7viDo"
+WEATHER_API_KEY = "371042462224860bd20bc47078679ecb"
+NEWS_API_KEY = "c29d283b2af34ab08fbbb422d8b53c31"
+STOCK_API_KEY = "LYRST9WLUPLTTZBN"

@@ -5,7 +5,7 @@ import requests  # For making HTTP requests to external APIs
 from datetime import datetime  # For timestamping news articles
 
 class Chatbot:
-    def __init__(self, api_key: str, user_name: str = "Arrush", weather_api_key: str = None, news_api_key: str = None, stock_api_key: str = None):
+    def __init__(self, api_key: str, user_name: str = "Sir", weather_api_key: str = None, news_api_key: str = None, stock_api_key: str = None):
         self.api_key = api_key  # Google Gemini API key
         self.user_name = user_name
         self.weather_api_key = weather_api_key  # OpenWeatherMap API key
