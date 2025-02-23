@@ -5,12 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="582893fd-ad9d-445c-b4e0-ded6cf04a3f4" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/GUI.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/logger.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Google_Jarvis_ObjDetect_ImageGen_ChatMode_News.py" beforeDir="false" afterPath="$PROJECT_DIR$/Google_Jarvis_ObjDetect_ImageGen_ChatMode_News.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dependencies.txt" beforeDir="false" afterPath="$PROJECT_DIR$/dependencies.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,7 +54,7 @@
     "Python.main.executor": "Run",
     "Python.test.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "Arrush",
+    "git-widget-placeholder": "main",
     "last_opened_file_path": "C:/Users/arrus/PycharmProjects/Research-Work",
     "settings.editor.selected.configurable": "project.propVCSSupport.Confirmation"
   }
