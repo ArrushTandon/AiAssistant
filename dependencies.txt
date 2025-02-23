@@ -11,3 +11,6 @@ pip3 install ultralytics mediapipe
 pip3 install --upgrade diffusers transformers accelerate safetensors
 pip3 install customtkinter pvporcupine pyaudio sounddevice
 >>>>>>> Stashed changes
+
+//email
+pip install nltk scikit-learn pyttsx3 google-generativeai requests
