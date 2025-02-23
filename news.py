@@ -58,7 +58,6 @@ def display_news(news_articles):
     print("\nTop 5 News Articles:")
     for i, article in enumerate(news_articles, start=1):
         news_text = f"{i}. {article['title']} - from {article['source']['name']}"
-        print(news_text)  # Print in terminal
         speak(news_text)  # Speak out loud
     speak("Please say the number of the news article you want to learn more about, or say 'exit' to quit.")
 
@@ -69,9 +68,22 @@ def open_news_source(news_articles, choice):
         webbrowser.open(news_articles[choice - 1]['url'])
     else:
         speak("Invalid choice. Please try again.")
-
-def handle_news():
-    """Handle the news functionality."""
+def listen():
+    try:
+        recognizer = sr.Recognizer()
+        with sr.Microphone() as source:
+            print("\nListening... (Say something)")
+            recognizer.adjust_for_ambient_noise(source, duration=1)
+            audio = recognizer.listen(source, timeout=5)
+        print("Recognizing...")
+        query = recognizer.recognize_google(audio, language="en-US")
+        print(f"You said: {query}")
+        return query.lower()
+    except:
+        print("Voice recognition failed. Please type your input:")
+        return input("Your choice: ").strip().lower()
+def main():
+    """Main function to handle the news assistant."""
     speak("Welcome to the News Assistant. Fetching the latest news...")
     news_articles = fetch_news()
     if not news_articles:
@@ -92,3 +104,6 @@ def handle_news():
             open_news_source(news_articles, choice)
         except ValueError:
             speak("Please say a valid number or 'exit'.")
+
+if __name__ == "__main__":
+    main()
