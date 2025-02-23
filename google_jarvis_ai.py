@@ -1,8 +1,9 @@
 import speech_recognition as sr
 import pyttsx3
 import google.generativeai as genai
-import requests  # For making HTTP requests to external APIs
-from datetime import datetime  # For timestamping news articles
+import requests
+from datetime import datetime
+from email import EmailAgent  # Import the EmailAgent class
 
 class Chatbot:
     def __init__(self, api_key: str, user_name: str = "Arrush", weather_api_key: str = None, news_api_key: str = None, stock_api_key: str = None):
@@ -13,6 +14,8 @@ class Chatbot:
         self.stock_api_key = stock_api_key  # Alpha Vantage API key
         self.engine = pyttsx3.init()
         self.setup_gemini()
+        self.email_agent = EmailAgent()  # Initialize the email agent
+        self.email_agent.login()  # Log in to the email account
 
     def setup_gemini(self):
         """Configures the Google Gemini API."""
@@ -20,7 +23,7 @@ class Chatbot:
 
     def say(self, text: str):
         """Speaks the given text using pyttsx3."""
-        print(f"Jarvis: {text}")  # Debugging
+        print(f"Jarvis: {text}")
         self.engine.say(text)
         self.engine.runAndWait()
 
@@ -55,6 +58,8 @@ class Chatbot:
                 return self.get_latest_news()
             elif "stock price" in prompt.lower():
                 return self.get_stock_price()
+            elif "summarize my emails" in prompt.lower():  # Email summarization
+                return self.summarize_emails()
             else:
                 # Use Gemini for general queries
                 model = genai.GenerativeModel("gemini-pro")
@@ -144,13 +149,38 @@ class Chatbot:
             print(f"Error fetching stock price: {e}")
             return "I encountered an issue while fetching the stock price."
 
+    def summarize_emails(self) -> str:
+        """Summarizes today's emails."""
+        if not self.email_agent.logged_in:
+            return "Email login failed. Please check your credentials."
+
+        email_ids = self.email_agent.get_today_emails()
+        if not email_ids:
+            return "You have no new emails today."
+
+        summary = "Here's a summary of your emails today:\n"
+        for idx, email_id in enumerate(email_ids, start=1):
+            details = self.email_agent.get_email_details(email_id)
+            if details:
+                summary += (
+                    f"{idx}. From: {details['sender']}\n"
+                    f"   Subject: {details['subject']}\n"
+                    f"   Date: {details['date']}\n\n"
+                )
+        return summary
+
+    def close(self):
+        """Closes all connections."""
+        if self.email_agent:
+            self.email_agent.close()
+
     def run(self):
         """Main loop to run the chatbot."""
         print("Welcome to Jarvis AI!")
         self.say("Welcome to Jarvis AI!")
 
-        while True:
-            try:
+        try:
+            while True:
                 query = self.take_command()
                 if not query:
                     continue
@@ -163,10 +193,11 @@ class Chatbot:
                 response = self.generate_response(query)
                 self.say(response)
 
-            except KeyboardInterrupt:
-                print("\nExiting...")
-                self.say("Goodbye!")
-                break
+        except KeyboardInterrupt:
+            print("\nExiting...")
+            self.say("Goodbye!")
+        finally:
+            self.close()  # Ensure connections are closed
 
 
 if __name__ == "__main__":

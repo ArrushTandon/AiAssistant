@@ -1,2 +1,13 @@
+<<<<<<< Updated upstream
 pip install SpeechRecognition pyttsx3 openai elevenlabs
 pip install pyaudio
+=======
+pip3 install SpeechRecognition pyttsx3 openai elevenlabs
+pip3 install pyaudio
+pip3 install diffusers opencv-python transformers accelerate
+pip3 uninstall torch torchvision -y
+pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+pip3 install ultralytics mediapipe
+pip3 install --upgrade diffusers transformers accelerate safetensors
+pip3 install customtkinter pvporcupine pyaudio sounddevice
+>>>>>>> Stashed changes
