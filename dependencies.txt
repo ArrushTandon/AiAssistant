@@ -5,3 +5,4 @@ pip uninstall torch torchvision -y
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
 pip install ultralytics mediapipe
 pip install --upgrade diffusers transformers accelerate safetensors
+pip install customtkinter pvporcupine pyaudio sounddevice
