@@ -6,6 +6,7 @@ from datetime import datetime
 from computer_vision import ComputerVisionModule
 from GUI import JarvisGUI
 from logger import JarvisLogger
+import os
 
 class Chatbot:
     def __init__(self, api_key: str, user_name: str = "Sir", weather_api_key: str = None, news_api_key: str = None, stock_api_key: str = None,stable_diffusion_model_id: str = "runwayml/stable-diffusion-v1-5"):
@@ -235,12 +236,19 @@ class Chatbot:
                     self.say(f"Generating image of: {prompt}")
                     self.logger.log_system("image_generation", f"Generating image with prompt: {prompt}")
                     try:
+                        # Create Images directory if it doesn't exist
+                        images_dir = "Images"
+                        if not os.path.exists(images_dir):
+                            os.makedirs(images_dir)
+
                         image = self.vision_module.generate_image(prompt)
                         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                         filename = f"generated_image_{timestamp}.png"
-                        image.save(filename)
-                        self.logger.log_system("image_generation", f"Image saved as: {filename}")
-                        return f"I've generated the image and saved it as {filename}"
+                        # Save in Images directory
+                        filepath = os.path.join(images_dir, filename)
+                        image.save(filepath)
+                        self.logger.log_system("image_generation", f"Image saved as: {filepath}")
+                        return f"I've generated the image and saved it as {filename} in the Images folder"
                     except Exception as e:
                         error_msg = f"Image generation error: {str(e)}"
                         self.logger.log_system("error", error_msg)
