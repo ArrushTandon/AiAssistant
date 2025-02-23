@@ -132,6 +132,7 @@ class ComputerVisionModule:
             raise Exception("Stable Diffusion is not initialized")
 
         try:
+            print(f"Generating image with prompt: {prompt}")  # Debug statement
             generation_kwargs = {
                 "prompt": prompt,
                 "num_inference_steps": 25,  # Reduced for faster generation
@@ -147,7 +148,9 @@ class ComputerVisionModule:
                 torch.cuda.empty_cache()
 
             with torch.inference_mode():
+                print("Generating image...")  # Debug statement
                 image = self.stable_diffusion(**generation_kwargs).images[0]
+                print("Image generated successfully.")  # Debug statement
 
             # Clear CUDA cache after generation
             if torch.cuda.is_available():
@@ -155,7 +158,7 @@ class ComputerVisionModule:
 
             return image
         except Exception as e:
-            print(f"Error generating image: {e}")
+            print(f"Error generating image: {e}")  # Debug statement
             raise
 
     def start_camera(self):
@@ -180,7 +183,7 @@ class ComputerVisionModule:
                 frame_with_all, faces = self.detect_faces(frame_with_objects)
 
                 # Display results
-                cv2.imshow('Jarvis Vision', frame_with_all)
+                cv2.imshow('Grim Vision', frame_with_all)
 
                 # Break loop with 'q'
                 if cv2.waitKey(1) & 0xFF == ord('q'):

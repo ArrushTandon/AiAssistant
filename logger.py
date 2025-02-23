@@ -4,15 +4,15 @@ from datetime import datetime
 import os
 
 
-class JarvisLogger:
-    def __init__(self, log_dir="logs"):  # Removed jarvis_instance requirement
+class GrimLogger:
+    def __init__(self, log_dir="logs"):  # Removed grim_instance requirement
         self.log_dir = log_dir
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
 
         # Create new log file for each session
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.log_file = os.path.join(log_dir, f"jarvis_log_{timestamp}.json")
+        self.log_file = os.path.join(log_dir, f"grim_log_{timestamp}.json")
         self.session_logs = {
             "session_start": timestamp,
             "conversations": [],
@@ -22,14 +22,14 @@ class JarvisLogger:
         self.save_logs()
         print(f"Logger initialized. Logging to: {self.log_file}")
 
-    def log_conversation(self, user_input, jarvis_response, timestamp=None):
+    def log_conversation(self, user_input, grim_response, timestamp=None):
         if timestamp is None:
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         conversation = {
             "timestamp": timestamp,
             "user_input": user_input,
-            "jarvis_response": jarvis_response
+            "grim_response": grim_response
         }
         self.session_logs["conversations"].append(conversation)
         self.save_logs()
