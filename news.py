@@ -54,8 +54,8 @@ def fetch_news():
 
 def display_news(news_articles):
     """Display news titles and sources using speech and in the terminal."""
-    speak("Here are the top 5 news articles:")
-    print("\nTop 5 News Articles:")
+    speak("Here are the top 4 news articles:")
+    print("\nTop 4 News Articles:")
     for i, article in enumerate(news_articles, start=1):
         news_text = f"{i}. {article['title']} - from {article['source']['name']}"
         speak(news_text)  # Speak out loud
@@ -82,7 +82,7 @@ def listen():
     except:
         print("Voice recognition failed. Please type your input:")
         return input("Your choice: ").strip().lower()
-def main():
+def handle_news():
     """Main function to handle the news assistant."""
     speak("Welcome to the News Assistant. Fetching the latest news...")
     news_articles = fetch_news()
@@ -105,5 +105,3 @@ def main():
         except ValueError:
             speak("Please say a valid number or 'exit'.")
 
-if __name__ == "__main__":
-    main()
