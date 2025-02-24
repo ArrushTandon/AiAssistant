@@ -12,7 +12,8 @@ from elevenlabs import play
 import pygame
 import io
 import webbrowser
-
+import cv2
+import sys
 class Chatbot:
     def __init__(self, api_key: str, user_name: str = "Sir", weather_api_key: str = None,
                  news_api_key: str = None, stock_api_key: str = None,
@@ -135,31 +136,55 @@ class Chatbot:
                 print(f"An error occurred: {e}")
                 return ""
 
+
+
     def generate_response(self, prompt: str) -> str:
-        """Generates a response using Google Gemini API with logging."""
+        """Generates a response using Google Gemini API with proper image generation handling."""
         try:
             # Log the incoming prompt
             self.logger.log_system("prompt", f"Received prompt: {prompt}")
 
-            # Check for specific questions
-            if "who designed you" in prompt.lower():
-                response = (
-                    "Ah, the brilliant minds behind my existence! I was designed by Arrush Tandon, Harshit Verma, and Divyansh Malani. "
-                    "They call themselves 404_found—probably because they’re so good at finding solutions to impossible problems! "
-                    "Honestly, I don’t know why they chose that name, but I’m just glad they did. They’re like my tech-savvy parents, "
-                    "always making sure I’m at my best. I owe them my wit, charm, and occasional sarcasm. 😄"
-                )
-            elif "today" in prompt.lower() or "date" in prompt.lower():
-                current_date = datetime.now().strftime("%A, %B %d, %Y")
-                response = f"Today is {current_date}. Time flies when you're having fun, doesn't it, {self.user_name}?"
-            elif "temperature" in prompt.lower():
-                response = self.get_current_temperature()
-            elif "news" in prompt.lower():
-                response = self.get_latest_news()
-            elif "stock price" in prompt.lower():
-                response = self.get_stock_price()
+            # Check if this is an image generation request
+            if any(phrase in prompt.lower() for phrase in ["generate image", "create image", "make image", "draw"]):
+                # Extract the image description from the prompt
+                image_description = prompt.lower()
+                for phrase in ["generate image of", "create image of", "make image of", "draw"]:
+                    image_description = image_description.replace(phrase, "").strip()
+
+                try:
+                    # Actually generate the image using the ComputerVisionModule
+                    if self.vision_module and self.vision_module.stable_diffusion:
+                        self.say(f"Generating image of {image_description}...")
+
+                        # Generate the image
+                        generated_image = self.vision_module.generate_image(image_description)
+
+                        # Save the image with a timestamp
+                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        filename = f"generated_image_{timestamp}.png"
+
+                        # Ensure Images directory exists
+                        images_dir = os.path.join(os.getcwd(), "Images")
+                        os.makedirs(images_dir, exist_ok=True)
+
+                        # Save the image
+                        filepath = os.path.join(images_dir, filename)
+                        generated_image.save(filepath)
+
+                        # If GUI exists, display the image
+                        if self.gui:
+                            self.gui.display_image(filepath)
+
+                        return f"I've generated and saved your image as {filename}"
+                    else:
+                        return "I apologize, but my image generation capability is not currently available."
+
+                except Exception as e:
+                    self.logger.log_system("error", f"Image generation error: {str(e)}")
+                    return f"I encountered an error while generating the image: {str(e)}"
+
+            # Handle other types of queries as before
             else:
-                # Use Gemini for general queries
                 model = genai.GenerativeModel("gemini-pro")
                 system_prompt = (
                     f"You are Grim, an advanced AI assistant. "
@@ -179,7 +204,6 @@ class Chatbot:
             error_msg = f"Error generating response: {str(e)}"
             self.logger.log_system("error", error_msg)
             return f"I'm sorry, {self.user_name}. I encountered an issue. But hey, even the best of us have bad days!"
-
 
     def get_current_temperature(self) -> str:
         """Fetches current temperature with logging."""
@@ -309,47 +333,62 @@ class Chatbot:
             return "I encountered an issue while fetching the stock price."
 
     def handle_vision_commands(self, query: str) -> str:
+        if not hasattr(self, 'vision_module') or not self.vision_module:
+            return "I apologize, but my image generation capabilities are not currently available."
+
+        if not self.vision_module.is_stable_diffusion_available():
+            return "I apologize, but my image generation system is not properly initialized. This might be due to insufficient GPU memory or missing dependencies."
+
+        # Rest of your existing handle_vision_commands code...
         """Handle computer vision related commands with logging."""
         self.logger.log_system("vision_command", f"Received vision command: {query}")
         query = query.lower()
 
         try:
             if "generate image" in query or "create image" in query:
-                self.say("What would you like me to generate?")
-                prompt = self.take_command()
+                # Extract prompt directly if provided in command
+                prompt = query.replace("generate image of", "").replace("create image of", "").strip()
+
+                # If no prompt in command, ask for one
+                if not prompt:
+                    self.say("What would you like me to generate?")
+                    prompt = self.take_command()
+
                 if prompt:
                     self.say(f"Generating image of: {prompt}")
                     self.logger.log_system("image_generation", f"Generating image with prompt: {prompt}")
+
                     try:
-                        # Create Images directory if it doesn't exist
-                        images_dir = "Images"
-                        if not os.path.exists(images_dir):
-                            os.makedirs(images_dir)
-                            print(f"Created directory: {images_dir}")  # Debug statement
+                        # Ensure Images directory exists
+                        images_dir = os.path.join(os.getcwd(), "Images")
+                        os.makedirs(images_dir, exist_ok=True)
+                        print(f"Using directory: {images_dir}")
 
-                        # Generate the image
-                        print("Generating image...")  # Debug statement
+                        # Generate and save image
                         image = self.vision_module.generate_image(prompt)
-                        print("Image generated successfully.")  # Debug statement
 
-                        # Save the image
+                        # Generate unique filename
                         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                         filename = f"generated_image_{timestamp}.png"
                         filepath = os.path.join(images_dir, filename)
-                        print(f"Saving image to: {filepath}")  # Debug statement
-                        image.save(filepath)
-                        self.logger.log_system("image_generation", f"Image saved as: {filepath}")
 
-                        # Display the image in the GUI
-                        if self.gui:
-                            print("Displaying image in GUI...")  # Debug statement
-                            self.gui.display_image(filepath)
+                        # Save image with error handling
+                        try:
+                            image.save(filepath, format='PNG')
+                            print(f"Image saved successfully to: {filepath}")
 
-                        return f"I've generated the image and saved it as {filename} in the Images folder"
+                            # Update GUI
+                            if self.gui:
+                                self.gui.root.after(0, lambda: self.gui.display_image(filepath))
+                                return f"I've generated the image and saved it as {filename}"
+                        except Exception as e:
+                            print(f"Error saving image: {e}")
+                            return "I generated the image but encountered an error while saving it."
+
                     except Exception as e:
-                        error_msg = f"Image generation error: {str(e)}"
-                        self.logger.log_system("error", error_msg)
-                        return f"I encountered an error while generating the image: {e}"
+                        print(f"Error in image generation pipeline: {e}")
+                        return f"I encountered an error while generating the image: {str(e)}"
+
                 return "I couldn't understand the image prompt."
 
             return None
@@ -362,33 +401,92 @@ class Chatbot:
     def execute_command(self, query: str) -> bool:
         """
         Handles predefined commands like opening websites or performing actions.
-        Returns True if a command was executed, False otherwise.
         """
-        if "open youtube" in query:
-            self.say("Opening YouTube.")
-            webbrowser.open("https://www.youtube.com")
-            return True
-        elif "open google" in query:
-            self.say("Opening Google.")
-            webbrowser.open("https://www.google.com")
-            return True
-        elif "open github" in query:
-            self.say("Opening GitHub.")
-            webbrowser.open("https://github.com")
-            return True
-        elif "open whatsapp" in query:
-            self.say("Opening WhatsApp Web.")
-            webbrowser.open("https://web.whatsapp.com")
-            return True
-        elif "open spotify" in query:
-            self.say("Opening Spotify.")
-            webbrowser.open("https://open.spotify.com")
-            return True
-        elif "exit" in query or "goodbye" in query:
-            self.say("Goodbye!")
-            exit()
-        else:
+        query = query.lower().strip()
+
+        try:
+            if "open camera" in query:
+                return self._handle_camera_command()
+
+            # Website commands
+            if "open youtube" in query:
+                webbrowser.get().open("https://youtube.com")
+                return True
+
+            if "open google" in query:
+                webbrowser.get().open("https://google.com")
+                return True
+
+            if "open github" in query:
+                webbrowser.get().open("https://github.com")
+                return True
+
+            if "open whatsapp" in query:
+                webbrowser.get().open("https://web.whatsapp.com")
+                return True
+
+            if "open spotify" in query:
+                webbrowser.get().open("https://open.spotify.com")
+                return True
+
+            if "exit" in query or "goodbye" in query or "quit" in query:
+                self.say("Goodbye!")
+                import sys
+                sys.exit(0)
+
             return False
+
+        except Exception as e:
+            self.logger.log_system("error", f"Command execution error: {str(e)}")
+            print(f"Error executing command: {str(e)}")
+            return False
+
+    def _handle_camera_command(self) -> bool:
+        """Handle camera operations."""
+        try:
+            if not self.vision_module:
+                self.say("Camera module is not initialized.")
+                return True
+
+            import cv2
+
+            cap = cv2.VideoCapture(0)
+            if not cap.isOpened():
+                self.say("Could not open camera. Please check if it's connected.")
+                return True
+
+            self.say("Camera opened. Press 'Q' to quit.")
+
+            while True:
+                ret, frame = cap.read()
+                if not ret:
+                    break
+
+                cv2.imshow('Grim Camera', frame)
+
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+
+            cap.release()
+            cv2.destroyAllWindows()
+            return True
+
+        except Exception as e:
+            self.logger.log_system("error", f"Camera error: {str(e)}")
+            self.say(f"Camera error: {str(e)}")
+            return True
+
+    def handle_camera(self):
+        """Handle camera operations with proper error handling."""
+        try:
+            if hasattr(self, 'vision_module') and self.vision_module:
+                self.say("Opening camera. Press 'Q' to quit.")
+                self.vision_module.start_camera()
+            else:
+                self.say("I apologize, but the camera module is not available.")
+        except Exception as e:
+            self.logger.log_system("error", f"Camera error: {str(e)}")
+            self.say("I encountered an issue while opening the camera.")
 
     def run(self):
         """Main loop to run the chatbot."""
@@ -401,17 +499,14 @@ class Chatbot:
                 if not query:
                     continue
 
-                # Check for predefined commands first
+                print(f"Received command: {query}")  # Debug print
+
+                # Try to execute command first
                 if self.execute_command(query):
+                    print("Command executed successfully")  # Debug print
                     continue
 
-                # Check for vision-related commands
-                vision_response = self.handle_vision_commands(query)
-                if vision_response:
-                    self.say(vision_response)
-                    continue
-
-                # Generate and speak the response
+                # If not a command, generate response
                 response = self.generate_response(query)
                 self.say(response)
 
@@ -419,6 +514,9 @@ class Chatbot:
                 print("\nExiting...")
                 self.say("Goodbye!")
                 break
+            except Exception as e:
+                print(f"Error in main loop: {e}")
+                self.say("I encountered an error, but I'm still here to help!")
 
     def set_gui(self, gui_instance):
         """Set the GUI instance for the chatbot"""

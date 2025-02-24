@@ -454,22 +454,42 @@ class GrimGUI:
     def display_image(self, image_path: str):
         """Display the generated image in the GUI."""
         try:
-            # Load the image
-            image = Image.open(image_path)
-            image.thumbnail((400, 400))  # Resize the image to fit in the GUI
+            # Verify file exists
+            if not os.path.exists(image_path):
+                print(f"Error: Image file not found at {image_path}")
+                return
 
-            # Convert the image to a format Tkinter can display
+            # Load and resize image
+            image = Image.open(image_path)
+
+            # Calculate resize dimensions while maintaining aspect ratio
+            max_size = (400, 400)
+            ratio = min(max_size[0] / image.width, max_size[1] / image.height)
+            new_size = (int(image.width * ratio), int(image.height * ratio))
+            image = image.resize(new_size, Image.Resampling.LANCZOS)
+
+            # Convert to PhotoImage
             image_tk = ImageTk.PhotoImage(image)
 
-            # Create a label to display the image
-            image_label = ctk.CTkLabel(self.root, image=image_tk, text="")
-            image_label.image = image_tk  # Keep a reference to avoid garbage collection
+            # Create new frame for image
+            image_frame = ctk.CTkFrame(self.chat_display)
+            self.chat_display.configure(state="normal")
+            self.chat_display.window_create("end", window=image_frame)
+            self.chat_display.insert("end", "\n")
+            self.chat_display.configure(state="disabled")
+
+            # Create and pack image label
+            image_label = ctk.CTkLabel(image_frame, image=image_tk, text="")
+            image_label.image = image_tk  # Keep reference
             image_label.pack(pady=10)
 
-            print(f"Image displayed: {image_path}")  # Debug statement
-        except Exception as e:
-            print(f"Error displaying image: {e}")  # Debug statement
+            # Scroll to show new image
+            self.chat_display.see("end")
+            print(f"Image displayed successfully from: {image_path}")
 
+        except Exception as e:
+            print(f"Error displaying image: {e}")
+            self.update_chat_display("system", "Failed to display the generated image.")
     def upload_file(self):
         """Handle file upload."""
         file_path = ctk.filedialog.askopenfilename()

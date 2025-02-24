@@ -7,10 +7,13 @@
     <list default="true" id="582893fd-ad9d-445c-b4e0-ded6cf04a3f4" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/GUI.py" beforeDir="false" afterPath="$PROJECT_DIR$/GUI.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Google_Jarvis_ObjDetect_ImageGen_ChatMode_News.py" beforeDir="false" afterPath="$PROJECT_DIR$/Google_Grim_ObjDetect_ImageGen_ChatMode_News.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Google_Grim_ObjDetect_ImageGen_ChatMode_News.py" beforeDir="false" afterPath="$PROJECT_DIR$/Google_Grim_ObjDetect_ImageGen_ChatMode_News.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/computer_vision.py" beforeDir="false" afterPath="$PROJECT_DIR$/computer_vision.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logger.py" beforeDir="false" afterPath="$PROJECT_DIR$/logger.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/jarvis_log_20250223_104640.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/jarvis_log_20250223_122831.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/jarvis_log_20250223_123408.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/jarvis_log_20250223_130253.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/jarvis_log_20250223_130722.json" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,6 +57,7 @@
     "Python.GUI.executor": "Run",
     "Python.Google_Grim_ObjDetect_ImageGen_ChatMode_News.executor": "Run",
     "Python.Google_Jarvis_ObjDetect_ImageGen_ChatMode_News.executor": "Run",
+    "Python.computer_vision.executor": "Run",
     "Python.google_jarvis_ai.executor": "Run",
     "Python.google_jarvis_ai_testing_new.executor": "Run",
     "Python.google_jarvis_email.executor": "Run",
